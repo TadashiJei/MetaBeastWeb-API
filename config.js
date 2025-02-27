@@ -44,7 +44,7 @@ module.exports = {
 
   //Email config, required for the API to send emails
   smtp_enabled: false,
-  smtp_name: "TCG Engine",    //Name of sender in emails
+  smtp_name: "MetaBeast",    //Name of sender in emails
   smtp_email: "",           //Email used to send
   smtp_server: "",          //SMTP server URL
   smtp_port: "465",

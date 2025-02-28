@@ -37,6 +37,11 @@ const userSchema = new Schema({
 
   friends: [{type: String}],
   friends_requests: [{type: String}],
+  
+  // MetaMask integration fields
+  metamask_nonce: {type: String, default: ""},  // Used for MetaMask signature verification
+  metamask_verified: {type: Boolean, default: false},  // Whether the user has verified their MetaMask wallet
+  metamask_last_connected: {type: Date, default: null},  // Last time the user connected with MetaMask
 });
 
 userSchema.virtual('id').get(function () {

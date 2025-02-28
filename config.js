@@ -27,10 +27,10 @@ module.exports = {
 
   //Mongo Connection
   mongo_user: "metabeast",
-  mongo_pass: "JroJKfVCWM4tuDXS",
-  mongo_host: "metabeast.4vqtb.mongodb.net",
+  mongo_pass: "JroJKfVCWM4tuDXSjk",
+  mongo_host: "metabease.ed4k4.mongodb.net",
   mongo_port: "27017",
-  mongo_db: "metabeastdb",
+  mongo_db: "MetaBease",
 
   //Limiter to protect from DDOS, will block IP that do too many requests
   limiter_window: 1000 * 120,  //in ms, will reset the counts after this time
@@ -50,6 +50,7 @@ module.exports = {
   smtp_port: "465",
   smtp_user: "",            //SMTP auth user
   smtp_password: "",        //SMTP auth password
+  admin_email: "",          //Email to send admin notifications to
 
   //ELO settings
   elo_k: 32,                //Higher K number will affect elo more each match
@@ -70,4 +71,12 @@ module.exports = {
   sell_ratio: 0.8,          //Sell ratio compared to buy price
   avatar_cost: 500,
   cardback_cost: 1000,
+  
+  //Web3 Configuration
+  web3_enabled: true,       //Enable Web3 functionality
+  web3_use_testnet: true,   //Use Core testnet instead of mainnet
+  web3_core_rpc_mainnet: "https://rpc.coredao.org",
+  web3_core_rpc_testnet: "https://rpc.test.btcs.network",
+  web3_admin_approval_required: true,  //Require admin approval for wallet disconnection
+  web3_auto_connect_verified_users: false,  //Auto-connect verified users to their wallets
 };

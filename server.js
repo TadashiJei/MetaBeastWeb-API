@@ -92,6 +92,13 @@ MarketRouter.route(app);
 const ActivityRouter = require("./activity/activity.routes");
 ActivityRouter.route(app);
 
+// Web3 Integration Routes
+if (config.web3_enabled) {
+    const MetaMaskRouter = require('./web3/routes/metamask.routes');
+    MetaMaskRouter.route(app);
+    console.log("Web3 integration enabled");
+}
+
 //Read SSL cert
 var ReadSSL = function()
 {

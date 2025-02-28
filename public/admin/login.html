@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0052FF;
+            --primary-hover: #0046DB;
+            --secondary-color: #6C7284;
+            --accent-color: #F7931A;
+            --background-color: #0A0B0D;
+            --card-background: #1A1B1F;
+            --text-color: #FFFFFF;
+            --text-secondary: #A0A0A0;
+            --border-color: #2D2F36;
+            --success-color: #00C087;
+            --warning-color: #FF9F1C;
+            --danger-color: #FF3B30;
+            --info-color: #0A84FF;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --gradient-start: #0052FF;
+            --gradient-end: #0046DB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 82, 255, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(247, 147, 26, 0.1) 0%, transparent 20%);
+            background-size: 100% 100%;
+            background-position: center;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+        }
+
+        .login-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .error-message {
+            background-color: rgba(255, 59, 48, 0.1);
+            border-left: 4px solid var(--danger-color);
+            padding: 10px;
+            margin-bottom: 20px;
+            color: var(--danger-color);
+            display: none;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <img src="assets/logo.svg" alt="MetaBeast Logo">
+            <h1>MetaBeast Admin</h1>
+            <p>Enter your credentials to access the admin dashboard</p>
+        </div>
+
+        <div id="error-message" class="error-message"></div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="login-btn">Sign In</button>
+        </form>
+
+        <div class="footer">
+            <p>MetaBeast Web3 Admin Panel &copy; 2025</p>
+            <p><a href="/">Return to Main Site</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in and redirect if valid
+            const token = localStorage.getItem('admin_token');
+            if (token) {
+                // Use custom validation instead of the auth.js method to avoid redirect loops
+                fetch('/auth/validate', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Invalid token');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Check if user has admin permissions
+                    if (data.permission_level >= 2) {
+                        // Redirect to admin dashboard
+                        window.location.href = '/admin/';
+                    } else {
+                        // Not an admin, remove token
+                        localStorage.removeItem('admin_token');
+                    }
+                })
+                .catch(() => {
+                    // Token invalid, remove it
+                    localStorage.removeItem('admin_token');
+                });
+            }
+            
+            // Handle login form submission
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const errorMsg = document.getElementById('error-message');
+                
+                // Clear previous error
+                errorMsg.textContent = '';
+                
+                // Validate input
+                if (!username || !password) {
+                    errorMsg.textContent = 'Please enter both username and password';
+                    return;
+                }
+                
+                // Send login request
+                fetch('/auth', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Invalid credentials');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Store token
+                    localStorage.setItem('admin_token', data.access_token);
+                    
+                    // Validate if user is admin
+                    return fetch('/auth/validate', {
+                        headers: {
+                            'Authorization': `Bearer ${data.access_token}`
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Invalid token');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Check if user has admin permissions
+                        if (data.permission_level >= 2) {
+                            // Redirect to admin dashboard
+                            window.location.href = '/admin/';
+                        } else {
+                            // Not an admin
+                            errorMsg.textContent = 'You do not have admin privileges';
+                            localStorage.removeItem('admin_token');
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    errorMsg.textContent = 'Invalid username or password';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

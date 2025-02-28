@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaMask Admin</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="/admin/js/auth.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-left">
+                <img src="../assets/logo.svg" alt="MetaBeast Logo" class="logo">
+                <h1>MetaMask Admin</h1>
+            </div>
+            <div class="user-menu">
+                <div class="user-info">
+                    <div class="username" id="admin-username">Loading...</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo.svg" alt="MetaBeast Logo" class="logo">
+                <h2>MetaBeast</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="/admin"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="active"><a href="/admin/metamask"><i class="fas fa-wallet"></i> MetaMask</a></li>
+                    <li><a href="/admin/users"><i class="fas fa-users"></i> Users</a></li>
+                    <li><a href="/admin/cards"><i class="fas fa-th"></i> Cards</a></li>
+                    <li><a href="/admin/packs"><i class="fas fa-box"></i> Packs</a></li>
+                    <li><a href="/admin/matches"><i class="fas fa-gamepad"></i> Matches</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-title">
+                    <h1>MetaMask Connections</h1>
+                </div>
+            </header>
+
+            <!-- Dashboard Stats -->
+            <section class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                    <div class="stat-content">
+                        <h3>Total Connections</h3>
+                        <p id="total-connections">Loading...</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-content">
+                        <h3>Pending Removals</h3>
+                        <p id="pending-removals">Loading...</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="stat-content">
+                        <h3>Recent Connections</h3>
+                        <p id="recent-connections">Loading...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="pending">Pending Removal Requests</button>
+                <button class="tab-btn" data-tab="all">All Connections</button>
+            </div>
+
+            <!-- Pending Removal Requests -->
+            <section id="pending-tab" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Pending Removal Requests</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="pending-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Wallet Address</th>
+                                        <th>User</th>
+                                        <th>Request Time</th>
+                                        <th>Reason</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pending-table-body">
+                                    <tr>
+                                        <td colspan="5" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- All Connections -->
+            <section id="all-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>All MetaMask Connections</h2>
+                        <div class="search-container">
+                            <input type="text" id="search-input" placeholder="Search wallet or username...">
+                            <button id="search-btn"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="connections-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Wallet Address</th>
+                                        <th>User</th>
+                                        <th>Connection Time</th>
+                                        <th>Last Used</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="connections-table-body">
+                                    <tr>
+                                        <td colspan="6" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="pagination">
+                                <button id="prev-page" disabled><i class="fas fa-chevron-left"></i></button>
+                                <span id="page-info">Page 1 of 1</span>
+                                <button id="next-page" disabled><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Viewing Details -->
+    <div id="detail-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Connection Details</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="connection-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Wallet Address:</span>
+                        <span id="detail-wallet" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">User:</span>
+                        <span id="detail-user" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Connection Time:</span>
+                        <span id="detail-connection-time" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Last Used:</span>
+                        <span id="detail-last-used" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Chain ID:</span>
+                        <span id="detail-chain-id" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span id="detail-status" class="detail-value"></span>
+                    </div>
+                </div>
+                <div id="removal-request-details" class="hidden">
+                    <h3>Removal Request</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Request Time:</span>
+                        <span id="detail-request-time" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span id="detail-email" class="detail-value"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Reason:</span>
+                        <span id="detail-reason" class="detail-value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Processing Removal Request -->
+    <div id="process-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Process Removal Request</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="process-wallet">Wallet Address:</label>
+                    <input type="text" id="process-wallet" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="process-user">User:</label>
+                    <input type="text" id="process-user" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="process-reason">Reason for Removal:</label>
+                    <textarea id="process-reason" readonly></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="process-notes">Admin Notes:</label>
+                    <textarea id="process-notes" placeholder="Enter notes about this decision..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Decision:</label>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="decision" value="approved" checked>
+                            Approve Removal
+                        </label>
+                        <label>
+                            <input type="radio" name="decision" value="rejected">
+                            Reject Removal
+                        </label>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button id="process-cancel" class="btn btn-secondary">Cancel</button>
+                    <button id="process-submit" class="btn btn-primary">Submit Decision</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Force Remove -->
+    <div id="force-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Force Remove Connection</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="warning-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Warning: This action will forcibly remove the wallet connection without user consent. This should only be used in exceptional circumstances.</p>
+                </div>
+                <div class="form-group">
+                    <label for="force-wallet">Wallet Address:</label>
+                    <input type="text" id="force-wallet" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="force-user">User:</label>
+                    <input type="text" id="force-user" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="force-reason">Reason for Force Removal:</label>
+                    <textarea id="force-reason" placeholder="Enter a reason for this force removal..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button id="force-cancel" class="btn btn-secondary">Cancel</button>
+                    <button id="force-submit" class="btn btn-danger">Force Remove</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Authentication is handled by auth.js
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,4 +1,3 @@
-
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const config = require('../config.js');
@@ -8,6 +7,7 @@ const UserTool = require('../users/users.tool');
 
 exports.Login = (req, res) => {
     try {
+        console.log('Login controller called for user:', req.login.username);
 
         let refreshId = req.login.userId + jwtSecret;
         let refresh_key = crypto.randomBytes(16).toString('base64');
@@ -15,6 +15,7 @@ exports.Login = (req, res) => {
         req.login.refresh_key = refresh_key;
 
         let access_token = jwt.sign(req.login, jwtSecret);
+        console.log('Generated access token for user:', req.login.username);
 
         //Delete some keys for security, empty keys are never valid, also update login time
         var update = {refresh_key: refresh_key, proof_key: "", password_recovery_key: "", last_login_time: new Date(), last_online_time: new Date()};
@@ -32,9 +33,11 @@ exports.Login = (req, res) => {
             version: config.version
         }
 
+        console.log('Login successful, sending response');
         return res.status(201).send(odata);
     
     } catch (err) {
+        console.error('Login error:', err);
         return res.status(500).send({error: err});
     }
 };
@@ -55,9 +58,17 @@ exports.GetVersion = (req, res) =>{
 // ----- verify user -----------
 
 exports.ValidateToken = async(req, res, next) => {
+    console.log('ValidateToken called for user:', req.jwt.username);
     
     var token = req.jwt;
-    var data = {id: token.userId, username: token.username, login_time: new Date(token.iat * 1000), server_time: new Date() };
+    var data = {
+        id: token.userId, 
+        username: token.username, 
+        permission_level: token.permission_level,
+        login_time: new Date(token.iat * 1000), 
+        server_time: new Date() 
+    };
+    console.log('Sending validation response:', data);
     return res.status(200).send(data);
 };
 

@@ -1,16 +1,21 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Check authentication first
-    AdminAuth.initAdminPage().then(auth => {
-        if (!auth) return; // User not authenticated
-        
-        // Initialize the admin UI
-        initUI();
-        
-        // Load initial data
-        loadDashboardStats();
-        loadPendingRequests();
-        loadAllConnections();
-    });
+    // Authentication is handled by auth.js
+    
+    // Initialize the admin UI
+    initUI();
+    
+    // Load initial data
+    loadDashboardStats();
+    loadPendingRequests();
+    loadAllConnections();
+    
+    // Set up logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            logout();
+        });
+    }
 });
 
 // UI Initialization
@@ -96,42 +101,31 @@ let pageSize = 10;
 
 // Load dashboard statistics
 function loadDashboardStats() {
-    AdminAuth.authFetch('/api/admin/metamask/stats')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+    authFetch('/api/admin/metamask/stats')
+        .then(response => response.json())
         .then(data => {
-            document.getElementById('total-connections').textContent = data.totalConnections;
-            document.getElementById('pending-removals').textContent = data.pendingRemovals;
-            document.getElementById('recent-connections').textContent = data.recentConnections;
+            document.getElementById('total-connections').textContent = data.totalConnections || 0;
+            document.getElementById('pending-requests').textContent = data.pendingRequests || 0;
         })
         .catch(error => {
             console.error('Error loading dashboard stats:', error);
-            showErrorNotification('Failed to load dashboard statistics');
         });
 }
 
 // Load pending removal requests
 function loadPendingRequests() {
-    AdminAuth.authFetch('/api/admin/metamask/removal-requests')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+    const requestsTable = document.getElementById('requests-table-body');
+    requestsTable.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+    
+    authFetch('/api/admin/metamask/removal-requests')
+        .then(response => response.json())
         .then(data => {
-            const tableBody = document.getElementById('pending-table-body');
-            tableBody.innerHTML = '';
-            
             if (data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No pending removal requests</td></tr>';
+                requestsTable.innerHTML = '<tr><td colspan="6" class="text-center">No pending removal requests</td></tr>';
                 return;
             }
             
+            requestsTable.innerHTML = '';
             data.forEach(request => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -151,7 +145,7 @@ function loadPendingRequests() {
                         </button>
                     </td>
                 `;
-                tableBody.appendChild(tr);
+                requestsTable.appendChild(tr);
                 
                 // Add event listeners for action buttons
                 tr.querySelector('.action-btn-view').addEventListener('click', () => showConnectionDetails(request));
@@ -160,33 +154,31 @@ function loadPendingRequests() {
             });
         })
         .catch(error => {
-            console.error('Error loading pending requests:', error);
-            document.getElementById('pending-table-body').innerHTML = 
-                '<tr><td colspan="5" class="text-center">Error loading data. Please try again.</td></tr>';
+            console.error('Error loading removal requests:', error);
+            requestsTable.innerHTML = '<tr><td colspan="6" class="text-center">Error loading data</td></tr>';
         });
 }
 
 // Load all MetaMask connections
 function loadAllConnections(page = 1) {
-    const limit = pageSize;
-    const skip = (page - 1) * limit;
+    const connectionsTable = document.getElementById('connections-table-body');
+    connectionsTable.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
     
-    AdminAuth.authFetch(`/api/admin/metamask/connections?limit=${limit}&skip=${skip}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+    currentPage = page;
+    
+    authFetch(`/api/admin/metamask/connections?page=${page}&limit=${pageSize}`)
+        .then(response => response.json())
         .then(data => {
-            const tableBody = document.getElementById('connections-table-body');
-            tableBody.innerHTML = '';
-            
-            if (data.connections.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No connections found</td></tr>';
+            if (!data.connections || data.connections.length === 0) {
+                connectionsTable.innerHTML = '<tr><td colspan="6" class="text-center">No connections found</td></tr>';
+                updatePagination(0, 0);
                 return;
             }
             
+            totalPages = Math.ceil(data.total / pageSize);
+            updatePagination(currentPage, totalPages);
+            
+            connectionsTable.innerHTML = '';
             data.connections.forEach(connection => {
                 const tr = document.createElement('tr');
                 
@@ -215,43 +207,29 @@ function loadAllConnections(page = 1) {
                         </button>
                     </td>
                 `;
-                tableBody.appendChild(tr);
+                connectionsTable.appendChild(tr);
                 
                 // Add event listeners for action buttons
                 tr.querySelector('.action-btn-view').addEventListener('click', () => showConnectionDetails(connection));
                 tr.querySelector('.action-btn-force').addEventListener('click', () => showForceRemoveModal(connection));
             });
-            
-            // Update pagination
-            currentPage = page;
-            totalPages = Math.ceil(data.total / limit);
-            
-            document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
-            document.getElementById('prev-page').disabled = currentPage <= 1;
-            document.getElementById('next-page').disabled = currentPage >= totalPages;
         })
         .catch(error => {
             console.error('Error loading connections:', error);
-            document.getElementById('connections-table-body').innerHTML = 
-                '<tr><td colspan="6" class="text-center">Error loading data. Please try again.</td></tr>';
+            connectionsTable.innerHTML = '<tr><td colspan="6" class="text-center">Error loading data</td></tr>';
         });
 }
 
 // Search connections
 function searchConnections(searchTerm) {
-    AdminAuth.authFetch(`/api/admin/metamask/connections?search=${encodeURIComponent(searchTerm)}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+    authFetch(`/api/admin/metamask/connections?search=${encodeURIComponent(searchTerm)}`)
+        .then(response => response.json())
         .then(data => {
-            const tableBody = document.getElementById('connections-table-body');
-            tableBody.innerHTML = '';
+            const connectionsTable = document.getElementById('connections-table-body');
+            connectionsTable.innerHTML = '';
             
             if (data.connections.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No matching connections found</td></tr>';
+                connectionsTable.innerHTML = '<tr><td colspan="6" class="text-center">No matching connections found</td></tr>';
                 return;
             }
             
@@ -284,7 +262,7 @@ function searchConnections(searchTerm) {
                         </button>
                     </td>
                 `;
-                tableBody.appendChild(tr);
+                connectionsTable.appendChild(tr);
                 
                 // Add event listeners for action buttons
                 tr.querySelector('.action-btn-view').addEventListener('click', () => showConnectionDetails(connection));
@@ -313,13 +291,8 @@ function showConnectionDetails(connection) {
     modalContent.innerHTML = '<div class="loading-spinner"></div>';
     
     // Fetch connection details
-    AdminAuth.authFetch(`/api/admin/metamask/connections/${connection._id}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+    authFetch(`/api/admin/metamask/connections/${connection._id}`)
+        .then(response => response.json())
         .then(data => {
             // Set connection details
             modalContent.innerHTML = `
@@ -415,19 +388,14 @@ function processRemovalRequest() {
     };
     
     // Send request to API
-    AdminAuth.authFetch('/api/admin/metamask/removal-requests/process', {
+    authFetch('/api/admin/metamask/removal-requests/process', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(requestBody)
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         // Close modal
         modal.style.display = 'none';
@@ -464,19 +432,14 @@ function forceRemoveConnection() {
     };
     
     // Send request to API
-    AdminAuth.authFetch('/api/admin/metamask/connections', {
+    authFetch('/api/admin/metamask/connections', {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(requestBody)
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         // Close modal
         modal.style.display = 'none';

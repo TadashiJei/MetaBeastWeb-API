@@ -176,10 +176,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Disable automatic auth check on login page
+            // We'll handle auth manually here
+            
             // Check if user is already logged in and redirect if valid
             const token = localStorage.getItem('admin_token');
             if (token) {
-                // Use custom validation instead of the auth.js method to avoid redirect loops
                 fetch('/auth/validate', {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -201,8 +203,8 @@
                         localStorage.removeItem('admin_token');
                     }
                 })
-                .catch(() => {
-                    // Token invalid, remove it
+                .catch(error => {
+                    console.error('Authentication error:', error);
                     localStorage.removeItem('admin_token');
                 });
             }

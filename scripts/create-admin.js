@@ -9,13 +9,10 @@ const config = require('../config.js');
 const { UserModel } = require('../users/users.model');
 
 // Build MongoDB connection string
-const mongoUri = `mongodb+srv://${config.mongo_user}:${config.mongo_pass}@${config.mongo_host}/${config.mongo_db}?retryWrites=true&w=majority`;
+const mongoUri = `mongodb://${config.mongo_host}:${config.mongo_port}/${config.mongo_db}`;
 
 // Connect to MongoDB
-mongoose.connect(mongoUri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
+mongoose.connect(mongoUri).then(() => {
     console.log('Connected to MongoDB');
     createAdminUser();
 }).catch(err => {
@@ -26,7 +23,7 @@ mongoose.connect(mongoUri, {
 // Create admin user
 async function createAdminUser() {
     try {
-        const username = 'admin';
+        const username = 'metabeastadmin';
         const email = 'admin@metabeast.fun';
         const password = 'admin123'; // You should change this in production
         

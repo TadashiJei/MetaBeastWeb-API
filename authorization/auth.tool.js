@@ -17,6 +17,12 @@ AuthTool.isValidJWT = (req, res, next) => {
     try {
         //Validate access token
         let authorization = req.headers['authorization'];
+        
+        // Check if the authorization header has the Bearer prefix
+        if (authorization.startsWith('Bearer ')) {
+            authorization = authorization.slice(7);
+        }
+        
         req.jwt = jwt.verify(authorization, config.jwt_secret);
 
         //Validate expiry time
@@ -34,12 +40,18 @@ AuthTool.isValidJWT = (req, res, next) => {
 
 AuthTool.isLoginValid = async(req, res, next) => {
 
-    if (!req.body || !req.body.password) 
+    console.log('Login attempt:', req.body);
+
+    if (!req.body || !req.body.password) {
+        console.log('Invalid params: missing password');
         return res.status(400).send({error: 'Invalid params'});
+    }
 
     //Requires EITHER username or email, dont need both
-    if (!req.body.email && !req.body.username) 
+    if (!req.body.email && !req.body.username) {
+        console.log('Invalid params: missing username or email');
         return res.status(400).send({error: 'Invalid params'});
+    }
 
     var user = null;
     
@@ -47,15 +59,20 @@ AuthTool.isLoginValid = async(req, res, next) => {
         user = await UserModel.getByEmail(req.body.email);
     else if(req.body.username)
         user = await UserModel.getByUsername(req.body.username);
-    if(!user)
+    if(!user) {
+        console.log('User not found');
         return res.status(404).send({error: "Invalid username or password"});
+    }
 
     let validPass = AuthTool.validatePassword(user, req.body.password);
+    console.log('Password validation:', validPass);
     if(!validPass)
         return res.status(400).send({error: 'Invalid username or password'});
 
-    if(user.permission_level <= 0)
+    if(user.permission_level <= 0) {
+        console.log('Account disabled');
         return res.status(403).send({error: "Your account has been disabled, please contact support!"});
+    }
 
     req.login = {
         userId: user.id,
@@ -65,7 +82,8 @@ AuthTool.isLoginValid = async(req, res, next) => {
         validation_level: user.validation_level,
         provider: req.body.email ? 'email' : 'username',
     };
-
+    
+    console.log('Login successful for user:', user.username);
     return next();
 };
 

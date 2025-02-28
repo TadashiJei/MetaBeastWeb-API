@@ -26,11 +26,11 @@ module.exports = {
   },
 
   //Mongo Connection
-  mongo_user: "metabeast",
-  mongo_pass: "JroJKfVCWM4tuDXSjk",
-  mongo_host: "metabease.ed4k4.mongodb.net",
+  mongo_user: "",
+  mongo_pass: "",
+  mongo_host: "localhost",
   mongo_port: "27017",
-  mongo_db: "MetaBease",
+  mongo_db: "MetaBeast",
 
   //Limiter to protect from DDOS, will block IP that do too many requests
   limiter_window: 1000 * 120,  //in ms, will reset the counts after this time

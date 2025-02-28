@@ -13,13 +13,13 @@ var user = ""; //User is optional if auth not enabled
 if(config.mongo_user && config.mongo_pass)
 	user = config.mongo_user + ":" + config.mongo_pass + "@";
 
-var connect = "mongodb://" + user + config.mongo_host + ":" + config.mongo_port + "/" + config.mongo_db + "?authSource=admin";
+var connect = "mongodb://" + user + config.mongo_host + ":" + config.mongo_port + "/" + config.mongo_db;
 mongoose.set('strictQuery', false);
 mongoose.connection.on("connected", () => {
 	console.log("Connected to MongoDB!");
 });
 mongoose.connection.on('error', function(err) {
-	console.error('Connection to MongoDB failed!');
+	console.error('Connection to MongoDB failed!', err);
 });
 mongoose.connect(connect);
 
@@ -112,8 +112,8 @@ var ReadSSL = function()
 //HTTP
 if(config.allow_http){
     var httpServer = http.createServer(app);
-    httpServer.listen(config.port, function () {
-        console.log('http listening port %s', config.port);
+    httpServer.listen(3000, function () {
+        console.log('http listening port %s', 3000);
     });
 }
 
@@ -134,8 +134,9 @@ if(config.allow_https && fs.existsSync(config.https_key)) {
     });
 }
 
-//Start jobs
+// Jobs initialization
 const Jobs = require("./jobs/jobs");
 Jobs.InitJobs();
 
+// Export the app for testing
 module.exports = app
